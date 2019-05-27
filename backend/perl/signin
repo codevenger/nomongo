@@ -1,0 +1,76 @@
+#!/usr/bin/perl
+
+require "./inc/common.pl";
+
+
+# Recebe valores de input do LOGIN
+$username = lc(&get("username"));
+if($username eq "") {
+    $username = lc(&get("user"));
+}
+if($username eq "") {
+    $username = lc(&get("usuario"));
+}
+$password = &get("password");
+if($password eq "") {
+    $password = &get("pass");
+}
+if($password eq "") {
+    $password = &get("senha");
+}
+$idioma = &get("idioma");
+if($idioma eq "") {
+    $idioma = "pt_BR";
+}
+$sid = $ENV{'AUTHORIZATION'};
+if($sid eq "") {
+    $sid = $ENV{'HTTP_SID'};
+}
+$sid =~ s/^sid[\s|=|:]+//;
+if($sid eq "") {
+    $sid = &get("sid");
+}
+if($sid eq "") {
+    my $uri = $ENV{'REQUEST_URI'};
+    if($uri =~ /[\?|&]+sid=(\S+)/) {
+        $sid = $1;
+    }
+}
+if($sid eq 'null') {
+    $sid = '';
+}
+$ip = $ENV{'REMOTE_ADDR'};
+$this = $ENV{'SCRIPT_NAME'};
+
+
+if($sid ne "" && $sid !~ /^\d+$/) {
+    error("Código de indentificação $sid inválido");
+} elsif($username eq "" && $password eq "") {
+    error("Você precisa informar um usuário e uma senha");
+} elsif($username eq "") {
+    error("Você precisa informar um usuário");
+} elsif($password eq "") {
+    error("Você precisa informar uma senha");
+} else {
+    $dbh->begin_work;
+    $sth=$dbh->prepare(qq(select system.signin(?, ?, ?, ?) as res));
+    $sth->execute(($ip, $sid, $username, $password));
+    if($dbh->err ne "") {
+        error("Falha ao conferir o usuário e senha: ".$dbh->errstr);
+    }
+    $row = $sth->fetchrow_hashref;
+    if($row->{res} !~ /['|"]status['|"]\s?[=|:]+\s?200/i) {
+        $sth=$dbh->prepare(qq(select system.signin(?, ?, ?, ?) as res));
+        $sth->execute(($ip, $sid, $username, $password));
+        $row = $sth->fetchrow_hashref;
+    }
+    
+    $dbh->commit;
+    &say_json($row->{res});
+}
+
+
+
+
+
+

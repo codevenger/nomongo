@@ -1,0 +1,31 @@
+Header always set Access-Control-Allow-Origin "*"                   
+Header always set Access-Control-Allow-Methods "POST, GET, PUT, OPTIONS, DELETE" 
+Header always set Access-Control-Allow-Headers "sid,X-Accept-Charset,X-Accept,Content-Type"
+
+ErrorDocument 500 /sys/crash
+
+<Files ~ "/img/users/">
+   Header set Cache-control "no-cache"
+</Files>
+
+RewriteEngine on
+
+RewriteCond %{REQUEST_URI} ^/img/users/
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /img/users/none.png [NC,L]
+
+RewriteCond %{REQUEST_URI} !^/download/
+RewriteCond %{REQUEST_URI} !^/img/
+RewriteCond %{REQUEST_URI} !^/css/
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /sys/$1
+
+#RewriteCond %{REQUEST_URI} !^/download/
+#RewriteCond %{REQUEST_URI} !^/sys/download/
+#RewriteCond %{REQUEST_URI} !^/img/
+#RewriteCond %{REQUEST_URI} !^/css/
+#RewriteCond "%{DOCUMENT_ROOT}/$1" !-f
+#RewriteCond "%{DOCUMENT_ROOT}/$1" !-d
+#RewriteRule ^(.*)$ /sys/router?req=$1 [L]

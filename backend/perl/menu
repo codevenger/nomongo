@@ -1,0 +1,24 @@
+#!/usr/bin/perl
+
+
+require "./inc/common.pl";
+
+
+if($sid eq "") {
+    deny("Você precisa infomar um código de identificação");
+} elsif($sid !~ /^\d+$/) {
+    error("Código de indentificação inválido");
+} else {
+    my $sth = $dbh->prepare(qq(select system.mkmenu(?) as res ));
+    $sth->execute($sid);
+    if($dbh->err ne "") {
+        error("Falha ao gerar o menu ");
+    }
+    if($sth->rows() == 0) {
+        deny();
+    } else {
+        my $row = $sth->fetchrow_hashref;
+        say_json($row->{res});
+    }
+}
+
