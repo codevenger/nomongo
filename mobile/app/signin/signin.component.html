@@ -1,0 +1,30 @@
+<FlexboxLayout class="page">
+	<StackLayout class="form">
+		<Image class="logo" src="~/img/logo_login.png"></Image>
+
+		<GridLayout rows="auto, auto, auto">
+			<StackLayout row="0" class="input-field">
+				<TextField class="input" hint="Email" [isEnabled]="!processing" keyboardType="email" autocorrect="false" autocapitalizationType="none"
+				 [(ngModel)]="input.email" returnKeyType="next" (returnPress)="focusPassword()"></TextField>
+				<StackLayout class="hr-light"></StackLayout>
+			</StackLayout>
+
+			<StackLayout row="1" class="input-field">
+				<TextField #password class="input" [isEnabled]="!processing" hint="Password" secure="true" [(ngModel)]="input.password" [returnKeyType]="isLoggingIn ? 'done' : 'next'"
+				 (returnPress)="submit()"></TextField>
+				<StackLayout class="hr-light"></StackLayout>
+			</StackLayout>
+
+			<ActivityIndicator rowSpan="3" [busy]="processing"></ActivityIndicator>
+		</GridLayout>
+
+		<Button [text]="'\uf090 Entrar'" [isEnabled]="!processing" (tap)="submit()" class="fa btn btn-primary m-t-20"></Button>
+		<CheckBox #CB1 text="Permanecer conectado" checked="false" fillcolor="#A8A8A8" class="login-chk"></CheckBox>
+	</StackLayout>
+
+	<Label class="login-label sign-up-label" (tap)="forgotPassword()">
+		<FormattedString>
+			<Span text="Esqueceu a senha?"></Span>
+		</FormattedString>
+	</Label>
+</FlexboxLayout>

@@ -1,0 +1,116 @@
+@import 'nativescript-theme-core/css/blue.css';
+
+.fa {
+    font-family: "FontAwesome";
+}
+
+.page-content .page-placeholder {
+    color: #D7D7D7;
+    font-size: 20;
+    vertical-align: center;
+    horizontal-align: center;
+}
+
+.page-content .page-icon {
+    font-size: 72;
+    vertical-align: top;
+    horizontal-align: center;
+    color: #D7D7D7;
+    margin-top: 20%;
+}
+
+.action-bar {
+    background-color: #2D5F8B;
+}
+
+.nav {
+    background-color: #3E6F9C;
+}
+
+.sidedrawer {
+    margin-bottom: 0;
+}
+.sidedrawer-list-item-icon,.sidedrawer-list-item{
+    color: #022734;
+}
+
+.sidedrawer.sidedrawer-left {
+    background-color: #999999;
+}
+
+.sidedrawer.sidedrawer-left .sidedrawer-header-image {
+    color: #F8F8F8;
+    height: 60;
+    width: 60;
+    font-size: 60;
+    padding: 0;
+    margin-bottom: 5;
+    margin-top: 15;
+}
+
+.sidedrawer.sidedrawer-left .footnote {
+    color: rgba(255,255,255,0.5);
+    background-color: rgba(0, 0, 0, 0.37);
+    padding: 4;
+}
+
+.sidedrawer .sidedrawer-header {
+    background-color: #999999;
+    background: url(~/img/profile-menu.png) repeat-y left top;
+    background-size: cover;
+    height: 110;
+}
+
+.sidedrawer .sidedrawer-header .sidedrawer-header-brand {
+    color: #fff;
+}
+
+.sidedrawer .sidedrawer-content{ 
+    background-color: #fff;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-item{
+    padding-left: 15;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-item Label {
+    vertical-align: center;
+    color: #022734;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-item .fa {
+    width: 20;
+    margin-right: 10;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-item.selected {
+    background-color: #F8F8F8;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-item.selected Label {
+    color:#3A53FF;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-subitem {
+    padding: 10;
+    padding-left: 40;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-subitem Label {
+    vertical-align: center;
+    color: #022734;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-subitem .fa {
+    width: 20;
+    margin-right: 10;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-subitem.selected {
+    background-color: #F8F8F8;
+}
+
+.sidedrawer .sidedrawer-content .sidedrawer-list-subitem.selected Label {
+    color:#3A53FF;
+}
+

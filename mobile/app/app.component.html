@@ -1,0 +1,52 @@
+<!--
+RadSideDrawer is a UI component part of the Progress NativeScript UI set of components.
+Learn more about the RadSideDrawer UI component and how it can be customized in this documentation article:
+http://docs.telerik.com/devtools/nativescript-ui/Controls/NativeScript/SideDrawer/getting-started
+-->
+<RadSideDrawer [drawerTransition]="sideDrawerTransition">
+	<GridLayout tkDrawerContent rows="auto, auto, *" class="sidedrawer sidedrawer-left">
+		<StackLayout row="0" class="sidedrawer-header">
+			<Image [src]="'https://sysdev.studiocoder.com.br/img/users/'+user.code+'.png'" stretch="aspectFit" class="sidedrawer-header-image fa img-rounded p-l-15 p-r-15 p-t-15"></Image>
+		</StackLayout>
+
+		<Label row="1" class="footnote" [text]="user.name"></Label>
+
+		<ScrollView row="2">
+			<StackLayout class="sidedrawer-content">
+
+				<RadListView [items]="items" [itemTemplateSelector]="templateSelector" class="list-group" (itemTap)="onItemTap($event)">
+					<ng-template tkListItemTemplate let-item="item">
+						<GridLayout columns="auto, *, auto" class="sidedrawer-list-item">
+							<Label col="0" [text]="item.icon" class="fa"></Label>
+							<Label col="1" [text]="item.descrp" class="p-r-10"></Label>
+							<Label *ngIf="item.items" col="2" text="+" class="p-r-10"></Label>
+						</GridLayout>
+					</ng-template>
+					<ng-template tkTemplateKey="expanded" let-item="item">
+						<StackLayout>
+							<GridLayout columns="auto, *, auto" class="sidedrawer-list-item">
+								<Label col="0" [text]="item.icon" class="fa"></Label>
+								<Label col="1" [text]="item.descrp" class="p-r-10"></Label>
+								<Label *ngIf="item.items" col="2" text="-" class="p-r-10"></Label>
+							</GridLayout>
+							<GridLayout *ngFor="let subitem of item.items" columns="auto, *" orientation="vertical" class="sidedrawer-list-subitem" (tap)="onSubitemTap(subitem.action)">
+								<Label col="0" [text]="subitem.icon" class="fa"></Label>
+								<Label col="1" [text]="subitem.descrp" class="p-r-10"></Label>
+							</GridLayout>
+						</StackLayout>
+					</ng-template>
+				</RadListView>
+
+				<StackLayout class="hr-light"></StackLayout>
+
+				<GridLayout columns="auto, *" class="sidedrawer-list-item" (tap)="logout()">
+					<Label col="0" text="&#xf08b;" class="fa"></Label>
+					<Label col="1" text="Sair" class="p-r-10"></Label>
+				</GridLayout>
+
+			</StackLayout>
+		</ScrollView>
+	</GridLayout>
+
+	<page-router-outlet tkMainContent class="page page-content"></page-router-outlet>
+</RadSideDrawer>

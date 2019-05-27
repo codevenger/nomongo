@@ -1,0 +1,16 @@
+<ActionBar title="Done TI" class="action-bar">
+	<ActionItem>
+		<StackLayout>
+			<Button class="fa" text="&#xf0c9;" fontSize="20" (tap)="onDrawerButtonTap()"></Button>
+		</StackLayout>
+	</ActionItem>
+</ActionBar>
+
+<GridLayout class="page page-content">
+	<Label class="page-icon fa" text="&#xf015;"></Label>
+	<WrapLayout orientation="horizontal" class="page-placeholder">
+		<Label text="Seja bem vindo,"></Label>
+		<Label [text]="user.name" fontWeight="Bold"></Label>
+		<Label text=""></Label>
+	</WrapLayout>
+</GridLayout>
