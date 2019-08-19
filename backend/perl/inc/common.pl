@@ -110,6 +110,22 @@ sub say_json {
     print decode_utf8($msg);
 }
 
+sub say {
+    my ($msg) = @_;
+    $msg = JSON->new->allow_nonref->encode(encode_entities($msg));
+  
+    # Inicializa JSON como resposta
+    print $query->header(-type => "application/json", -charset => "utf-8");
+    print qq({\n"status" : 200,\n);
+    print qq("message" : ).$msg;
+    print qq(\n});
+
+    if($ENV{'REQUEST_METHOD'} ne "GET" && $dbh) {
+        $dbh->commit();
+    }
+    exit;
+}
+
 sub error {
     my ($msg) = @_;
     $msg = JSON->new->allow_nonref->encode(encode_entities($msg));

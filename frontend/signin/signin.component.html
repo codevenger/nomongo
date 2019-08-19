@@ -1,0 +1,18 @@
+<div layout="row" layout-align="center center" layout-fill class="outer">
+    <form name="form" ng-submit="submit()" role="form">  
+        <div layout="column" class="wrapper" flex>
+            <image class="logo" src="img/logo_login.png">
+            <md-input-container>
+                <label>Usuário</label>
+                <input type="text" name="username" id="username" class="form-control" ng-model="username" required />
+            </md-input-container>
+            <md-input-container>
+                <label>Senha</label>
+                <input type="password" name="password" id="password" class="form-control" ng-model="password" required />
+            </md-input-container>
+            <md-button type="submit" ng-disabled="form.$invalid || form.$required" class="md-raised md-primary" flex>
+                <i class="material-icons btn">exit_to_app</i> Entrar
+            </md-button>
+        </div>
+    </form>
+</div>
