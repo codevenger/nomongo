@@ -32,10 +32,59 @@ md-input-container {
 }
 
 md-toast.md-success-toast-theme .md-toast-content {
+  margin-top: 45px;
   background-color: green;
 }
 
 md-toast.md-error-toast-theme .md-toast-content {
+  margin-top: 45px;
   background-color: orange;
   text-align: center;
 }
+
+md-toolbar.md-short {
+    height: 45px;
+    min-height: 45px;
+    max-height: 45px;
+}
+
+md-sidenav, md-backdrop.md-sidenav-backdrop {
+    margin-top: 45px;
+}
+
+.rotate{
+    margin-top: -2px;
+    -moz-transition: all .3s linear;
+    -webkit-transition: all .3s linear;
+    transition: all .3s linear;
+}
+
+.rotate.change{
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
+    opacity: 0;
+}
+
+.nrotate{
+    margin-top: -4px;
+    position: relative;
+    left: -27px;
+    opacity: 0;
+    -moz-transition: all .3s linear;
+    -webkit-transition: all .3s linear;
+    transition: all .3s linear;
+}
+
+.nrotate.change{
+    font-size: 30px;
+    background-color: rgb(100,113,207);
+    border-radius: 50%;
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
+    opacity: 1;
+}
+

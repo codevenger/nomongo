@@ -8,7 +8,16 @@ app.constant('$config', {
 
 app.config(function($stateProvider, $urlRouterProvider, $locationProvider) {
 
-    $urlRouterProvider.otherwise('signin');
+    $urlRouterProvider.otherwise('/signin');
+    
+    var main = {
+        name: 'main',
+        url: '/main',
+        templateUrl: 'main.component.html',
+        controller: 'mainCtrl'
+    }
+    
+    $stateProvider.state(main);
 
     $stateProvider
     
@@ -19,6 +28,7 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider) {
         })
 
         .state('home', {
+            parent: main,
             url: '/home',
             templateUrl : 'home/home.component.html',
             controller : 'homeCtrl'
@@ -81,13 +91,27 @@ app.controller("signinCtrl", function($sce, $scope, $state, $http, $config, $mdT
     
 });
 
+app.controller("mainCtrl", function($scope, $state, $mdSidenav){
+    
+    $scope.isSidenavOpen = false;
+    $scope.toggleLeft = buildToggler('left');
+
+    function buildToggler(componentId) {
+      return function() {
+        $mdSidenav(componentId).toggle();
+      };
+    }    
+
+});
+
 app.controller("homeCtrl", function($scope, $state){
+    
 
 });
 
 
 angular.module("main").controller("mainController",function($scope){
-    var data = "roger";
-    $scope.data = "that";
+
+    
 });
  
