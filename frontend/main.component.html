@@ -19,18 +19,21 @@
 
     <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-open="isSidenavOpen" md-whiteframe="4">
 
-        <md-toolbar class="md-theme-indigo">
-        </md-toolbar>
+        <md-content md-scroll-y flex layout="column">
+          <md-accordion locked="true">
+            <md-accordion-group ng-repeat="item in menu">
 
-        <md-content layout-margin="">
-        <p>
-            This sidenav is not showing any backdrop, where users can click on it, to close the sidenav.
-        </p>
-        <md-button ng-click="toggleLeft()" class="md-accent">
-            Close this Sidenav
-        </md-button>
+                <md-accordion-button href="#!/{{ item.goto }}" ui-sref="{{ item.goto }}" ng-if="item.goto"><i class="fa {{ item.css }}"></i> {{ item.descrp }}</md-accordion-button>
+                
+                <md-accordion-content ng-if="!item.goto" md-css="fa {{ item.css }}" md-heading="{{ item.descrp }}" md-arrow="true">
+                    <md-accordion-button ng-repeat="subitem in item.submenu" href="#!/{{ subitem.goto }}" ui-sref="{{ subitem.goto }}" ng-if="subitem.goto"><i class="fa {{ subitem.css }}" style="font-size: 20px; margin-right: 10px;"></i> {{ subitem.descrp }}</md-accordion-button>
+                </md-accordion-content>
+             
+            </md-accordion-group>
+                     
+          </md-accordion>
         </md-content>
-
+        
     </md-sidenav>
 
     <md-content flex layout-padding>

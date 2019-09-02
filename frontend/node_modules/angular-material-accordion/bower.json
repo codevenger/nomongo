@@ -1,0 +1,36 @@
+{
+  "projectName": "Angular Material Accordion",
+  "name": "angular-material-accordion",
+  "description": "A simple Accordion for Angular Material",
+  "version": "1.0.5",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajsb85/angular-material-accordion.git"
+  },
+  "authors": [
+    "Alexander J. Salas B. <a.salas@ieee.org>"
+  ],
+  "keywords": [
+    "Angular",
+    "Material",
+    "Design",
+    "Navigation",
+    "Accordion"
+  ],
+  "main": [
+    "dist/angular-material-accordion.js",
+    "dist/angular-material-accordion.css"
+  ],
+  "ignore": [
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "angular": "^1.5.6",
+    "angular-animate": "^1.5.6",
+    "angular-aria": "^1.5.6",
+    "angular-material": "^1.0.9",
+    "components-font-awesome": "^4.6.3"
+  }
+}

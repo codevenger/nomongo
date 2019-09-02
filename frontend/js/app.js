@@ -1,4 +1,4 @@
-var app = angular.module('NoMongo', ['main', 'ui.router', 'ngSanitize', 'ngMaterial', 'ngMessages']);
+var app = angular.module('NoMongo', ['main', 'ui.router', 'ngSanitize', 'ngMaterial', 'ngMessages', 'ngMaterialAccordion']);
 
 app.constant('$config', {
     url: 'http://142.93.75.2',
@@ -144,6 +144,7 @@ app.controller("mainCtrl", function($scope, $state, $mdSidenav, menuService){
         var posload = false;
 
         $scope.menu = response.data;
+        console.log('Menu: ', $scope.menu);
     });
 });
 
