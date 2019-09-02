@@ -112,7 +112,7 @@ BEGIN
             group by c.parent) union all (select c2.id,
                 NULL as js from menu_from_parents tree
                 join system.menu c2 using(id)
-            where var_level = 0 and c2.action != '' and not id = any(parents)
+            where var_level = 0 and c2.goto != '' and not id = any(parents)
             group by c2.id
             )
             union all
@@ -378,7 +378,7 @@ CREATE TABLE system.menu (
     id integer NOT NULL,
     descrp character varying(100) NOT NULL,
     descri character varying(100) NOT NULL,
-    action character varying(200),
+    goto character varying(200),
     parent integer,
     seq smallint DEFAULT 99,
     css character varying(50),
@@ -697,7 +697,7 @@ COPY system.languages (id, descrp, abbr) FROM stdin;
 -- Data for Name: menu; Type: TABLE DATA; Schema: system; Owner: messias
 --
 
-COPY system.menu (id, descrp, descri, action, parent, seq, css, icon) FROM stdin;
+COPY system.menu (id, descrp, descri, goto, parent, seq, css, icon) FROM stdin;
 3	Cadastro de Usuários	Users	users	2	21	fa-users	
 1	Início	Home	home	\N	1	fa-home	
 2	Manutenção	Settings	\N	\N	5	fa-wrench	

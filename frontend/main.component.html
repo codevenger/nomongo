@@ -21,14 +21,23 @@
 
         <md-content md-scroll-y flex layout="column">
           <md-accordion locked="true">
-            <md-accordion-group ng-repeat="item in menu">
-
-                <md-accordion-button href="#!/{{ item.goto }}" ui-sref="{{ item.goto }}" ng-if="item.goto"><i class="fa {{ item.css }}"></i> {{ item.descrp }}</md-accordion-button>
+          
+            <br>
+                 
+            <script type="text/ng-template" id="menuTree">
+                <md-accordion-button ng-if="item.goto" href="#!/{{ item.goto }}" ui-sref="{{ item.goto }}" ng-if="item.goto"><i class="fa {{ item.css }}"></i> {{ item.descrp }}</md-accordion-button>
                 
-                <md-accordion-content ng-if="!item.goto" md-css="fa {{ item.css }}" md-heading="{{ item.descrp }}" md-arrow="true">
-                    <md-accordion-button ng-repeat="subitem in item.submenu" href="#!/{{ subitem.goto }}" ui-sref="{{ subitem.goto }}" ng-if="subitem.goto"><i class="fa {{ subitem.css }}" style="font-size: 20px; margin-right: 10px;"></i> {{ subitem.descrp }}</md-accordion-button>
+                <md-accordion-content ng-if="!item.goto" md-class="fa {{ item.css }}" md-heading="{{ item.descrp }}" md-arrow="true">
+                    <md-accordion-button ng-repeat="subitem in item.submenu" href="#!/{{ subitem.goto }}" ui-sref="{{ subitem.goto }}" ng-if="subitem.goto"><i class="fa {{ subitem.css }}"></i> {{ subitem.descrp }}</md-accordion-button>
+                    <div ng-if="item.submenu" ng-repeat="item in item.submenu" ng-include="'menuTree'"><md-accordion-group></md-accordion-group></div>
                 </md-accordion-content>
-             
+            </script>
+                           
+            <div ng-repeat="item in menu" ng-include="'menuTree'"><md-accordion-group></md-accordion-group></div>
+            
+            <md-accordion-group>
+                <md-divider></md-divider>
+                <md-accordion-button href="#!/signout" ui-sref="signout"><i class="fa fa-sign-out"></i> Sair</md-accordion-button>
             </md-accordion-group>
                      
           </md-accordion>

@@ -36,7 +36,7 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider) {
 
         .state('signout', {
             url: '/signout',
-            templateUrl : 'signout/signout.component.html',
+            templateUrl : 'signin/signin.component.html',
             controller : 'signoutCtrl'
         });
         
@@ -78,13 +78,37 @@ app.service('menuService', ['$http', '$q', '$state', '$mdToast', '$config', '$sc
             });
         return deferred.promise;
     }
-}]);
+}])
+
+.service('$session', function () {
+    this.create = function (sid, user) {
+        this.sid = sid;
+        this.user = user;
+    
+        window.sessionStorage.setItem('sid', sid);
+        window.sessionStorage.setItem('user', user);
+    };
+    this.set = function (k, v) {
+        window.sessionStorage.setItem(k, v);
+    };
+    this.get = function (k) {
+        return window.sessionStorage.getItem(k);
+    };
+    this.destroy = function () {
+        this.sid = null;
+        this.user = null;
+        
+        window.sessionStorage.removeItem('sid');
+        window.sessionStorage.removeItem('user');
+    };
+});
+
 
 
 angular.module("main",[]);
 
 
-app.controller("signinCtrl", function($sce, $scope, $state, $http, $config, $mdToast){
+app.controller("signinCtrl", function($sce, $scope, $state, $http, $config, $mdToast, $session){
     $scope.submit = function() {
         if(! $scope.username) {
             alert("Você não informou um usuário");
@@ -102,7 +126,7 @@ app.controller("signinCtrl", function($sce, $scope, $state, $http, $config, $mdT
         
         $http.post($config.url+'/sys/signin', send)
             .then(function(response) {
-                console.log('Sucesso: ', response);
+                $session.create(response.data.sid, response.data.user);
                 $http.defaults.headers.common['sid'] = response.data.sid;
                 $mdToast.show(
                     $mdToast.simple()
@@ -128,15 +152,24 @@ app.controller("signinCtrl", function($sce, $scope, $state, $http, $config, $mdT
     
 });
 
-app.controller("mainCtrl", function($scope, $state, $mdSidenav, menuService){
+app.controller("signoutCtrl", function($session, $state){
+    $session.destroy();
+    $state.go('signin');
+});
+
+app.controller("mainCtrl", function($scope, $state, $mdSidenav, menuService, $session){
     
     $scope.isSidenavOpen = false;
     $scope.toggleLeft = buildToggler('left');
 
     function buildToggler(componentId) {
-      return function() {
-        $mdSidenav(componentId).toggle();
-      };
+        return function() {
+            if($session.get('sid')) {
+                $mdSidenav(componentId).toggle();
+            } else {
+                $state.go('signin');
+            }
+        };
     }
     
     menuService.get().then(function (response) {
@@ -153,6 +186,11 @@ app.controller("homeCtrl", function($scope, $state){
 
 });
 
+app.run(function($window, $session, $http) {
+    if($session.get('sid')) {
+        $http.defaults.headers.common['sid'] = $session.get('sid');
+    }
+});
 
 angular.module("main").controller("mainController",function($scope){
 

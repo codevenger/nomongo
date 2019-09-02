@@ -60,6 +60,7 @@ Is needed to create groups of content.
 Define the collapsible navigation element and there's some attributes to setup. The following attributes are available:
  - `md-icon` - You can use font icons
  - `md-svg-icon` - To use external svg icons
+ - `md-class` - To use class as fontawesome
  - `md-heading` - The title of the section
  - `md-arrow` - An optional boolean to show an indicator arrow
 
