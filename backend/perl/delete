@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+# Ativa o modo UTF8
+binmode STDOUT, ":encoding(utf8)";
+use utf8;
+
+require "./inc/common.pl";
+
+
+if($sid eq "") {
+    error("Você precisa infomar um código de identificação");
+} elsif($sid !~ /^\d+$/) {
+    error("Código de indentificação inválido");
+} else {
+    say('Exclui Registro');
+}
+

@@ -1,11 +1,14 @@
 #!/usr/bin/perl
 
+# Ativa o modo UTF8
+binmode STDOUT, ":encoding(utf8)";
+use utf8;
 
 require "./inc/common.pl";
 
 
 if($sid eq "") {
-    deny("Você precisa infomar um código de identificação");
+    error("Você precisa infomar um código de identificação");
 } elsif($sid !~ /^\d+$/) {
     error("Código de indentificação inválido");
 } else {
@@ -15,7 +18,7 @@ if($sid eq "") {
         error("Falha ao gerar o menu ");
     }
     if($sth->rows() == 0) {
-        deny();
+        deny($sid);
     } else {
         my $row = $sth->fetchrow_hashref;
         say_json($row->{res});

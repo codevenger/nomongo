@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 
+# Ativa o modo UTF8
+binmode STDOUT, ":encoding(utf8)";
+use utf8;
+
 require "./inc/common.pl";
 
 
@@ -27,7 +31,7 @@ if($sid eq "") {
     $sid = $ENV{'HTTP_SID'};
 }
 $sid =~ s/^sid[\s|=|:]+//;
-if($sid eq "") {
+if($sid eq "" || $sid eq "undefined") {
     $sid = &get("sid");
 }
 if($sid eq "") {

@@ -1,0 +1,334 @@
+#!/usr/bin/perl
+
+# Ativa o modo UTF8
+binmode STDOUT, ":encoding(utf8)";
+use utf8;
+
+require "./inc/common.pl";
+
+
+if($sid eq "") {
+    error("Você precisa infomar um código de identificação");
+} elsif($sid !~ /^\d+$/) {
+    error("Código de indentificação inválido");
+}
+
+# Verifica se tabela existe e se usuário tem direito de acesso
+&chktbl($tab);
+
+# Lista as chaves estrangeiras da tabela
+&getfk($tab);
+
+
+
+
+# Retorna conteúdo da tabela
+(my $sql) = ($req =~ /^\/?$tab\/?\?(.*)$/);
+my %qsql;
+if($sql ne "") {
+    # Condição where
+    $sql = uri_unescape($sql);
+    $sql = decode_entities($sql);
+            
+    # Pega order
+    ($ord) = ($sql =~ /order=([a-zA-Z0-9\-\_\,\.]+)/);
+    if($ord ne "") {
+        $ord =~ s/\,/", "/g;
+        $ord =~ s/\./"."/g;
+        $ord =~ s/\,\s+"$//;
+        $ord = '"'.$ord.'" ';
+    }
+    # Remove order
+    $sql =~ s/order=[a-zA-Z0-9\-\_\,\.]+//i;
+    
+    # Pega limit
+    ($limit) = ($sql =~ /limit=([0-9]+)/);
+    ($offset) = ($sql =~ /offset=([0-9]+)/);
+    $sql =~ s/limit=[0-9]+//i;
+    $sql =~ s/offset=[0-9]+//i;
+    
+    # Remove sID
+    $sql =~ s/sid=[a-zA-Z0-9\-\_\.]+//i;
+
+    $sql =~ s/&+$//;
+
+    if($sql ne "") {
+        $sql =~ s/<>/!=/gm;
+        $sql =~ s/=/='/g;
+        $sql =~ s/>=/>='/g;
+        $sql =~ s/<=/<='/g;                
+        $sql =~ s/>/>='/g;
+        $sql =~ s/</<='/g;
+        
+        $sql =~ s/\&+$//;
+        $sql =~ s/\|+$//;
+        
+        $sql =~ s/^\&+//;
+        $sql =~ s/^\|+//;
+        
+        $sql =~ s/\&/'&#/g;
+        $sql =~ s/\|/'|#/g;
+        $sql .= "'";
+        
+        my @all = split('#', $sql);
+        for(my $f=0; $f < scalar(@all); $f++) {
+            if($tab eq 'cep' && $all[$f] =~ /code/) {
+                $all[$f] =~ s/[\.\-\/]//g;
+            } elsif($all[$f] =~ /cnpj/) {
+                $all[$f] =~ s/[\.\-\/]//g;
+                my ($t) = ($all[$f] =~ /(\d+)/);
+                error("CNPJ inválido!") unless test_cnpj($t);
+            } elsif($all[$f] =~ /cpf/) {
+                $all[$f] =~ s/[\.\-\/]//g;
+                my ($t) = ($all[$f] =~ /(\d+)/);
+                error("CPF inválido!") unless test_cpf($t);
+            } elsif($all[$f] !~ /'[\d-\/\.]+'/) {
+                if($all[$f] =~ /[À-á-ú]/) {
+                    $all[$f] =~ s/='/<=>'/;
+                } elsif($all[$f] =~ /\%/) {
+                    $all[$f] =~ s/=/ ilike /;
+                } elsif($all[$f] =~ /=['"]+/) {
+                    $all[$f] =~ s/='/ <=> '%/g;
+                } else {
+                    $all[$f] =~ s/=/ <=> /g;
+                }
+                
+                $all[$f] =~ s/'\s?$/%'/;
+                $all[$f] =~ s/'&$/%'&/;
+                $all[$f] =~ s/\+/ /g;
+                $all[$f] =~ s/ ilike '/ ilike '%/g;
+
+            }
+            if($all[$f] ne "" && $all[$f] !~ /^sid=/) {
+                if($all[$f] =~ /"?[a-zA-Z0-9\-\_\/]+"?\."?[a-zA-Z0-9\-\_\/]+"?/) {
+                    ($qtab) = ($all[$f] =~ /"?([a-zA-Z0-9\-\_\/]+)"?\..*/) ;
+                } else {
+                    $qtab = $tab;
+                    $all[$f] = $tab.'.'.$all[$f];
+                }
+                $all[$f] =~ s/\&/ and /g;
+                $all[$f] =~ s/\|/ or /g;
+                $all[$f] =~ s/!='null'/ is not null/g;
+                $all[$f] =~ s/='null'/ is null/g;
+                $qsql{$qtab} .= $all[$f];
+                
+            }
+        }
+
+        foreach $qkey (keys %qsql) {
+            $qsql{$qkey} =~ s/or\s+$//;
+            $qsql{$qkey} =~ s/and\s+$//;
+            $qsql{$qkey} =~ s/'' $/' /;
+            if($qsql{$qkey} ne "") {
+                $qsql{$qkey} = " where ".$qsql{$qkey};
+            }
+        }
+    }
+}
+
+my $jsql;
+$jsql = 'select row_to_json('.$tab.'1) as res from ';
+$jsql .= &gerasql($tab, %qsql);
+
+# Transforma data para o padrão do banco
+$jsql =~ s/(\d\d)[\-\.\/](\d\d)[\-\.\/](\d{4})/$3-$2-$1/gm;
+
+$sth = $dbh->prepare($jsql);
+$sth->execute();
+if($dbh->err ne "") {
+    error("Falha ao popular o recurso requisitado: ".$dbh->errstr);
+}
+$count_reg = $sth->rows();
+
+if($limit ne '') {
+    $jsql .= ' limit '.$limit;
+}
+if($offset ne '') {
+    $jsql .= ' offset '.$offset;
+}
+
+$sth = $dbh->prepare($jsql);
+$sth->execute();
+if($dbh->err ne "") {
+    error("Falha ao popular o recurso requisitado: ".$dbh->errstr);
+}
+if($sth->rows() == 0) {
+    say("Não existem registros disponíveis");
+} else {
+    my $res = "[";
+    while($row = $sth->fetchrow_arrayref) {
+        $res .= @$row[0].", ";
+    }
+    $res =~ s/\,\s+$/]/;
+
+    # Remove segundos
+    $res =~ s/["](\d\d)[:](\d\d)[:](\d\d)["]/"$1:$2"/gm;
+    
+    $res =~ s/&#39;/'/gm;
+    $res =~ s/&apos;/'/gm;
+    say_json(qq({ "total": $count_reg, "data": $res }));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+sub chktbl {
+    my ($tab) = @_;
+    my $schema = 'public';
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+        $schema = 'system';
+    }
+    
+    my $sth = $dbh->prepare(qq(select * from information_schema.tables where table_schema = '$schema' and table_name = ?));
+    $sth->execute($tab);
+    if($dbh->err ne "") {
+        error("Falha em localizar a recurso requisitado");
+    }
+
+    if($sth->rows() == 0) {
+        $sth = $dbh->prepare(qq(select * from pg_class where relkind = 'm' and oid::regclass::text = ?));
+        $sth->execute($tab);
+        if($dbh->err ne "") {
+            error("Falha em localizar a recurso requisitado");
+        }    
+        if($sth->rows() == 0) {
+            error("Recurso $tab não encontrado");
+        }
+    }
+
+    if($user{group} eq '') {
+        error("Falha em identificar o grupo do usuário");
+    } else {
+        # Verifica se tem direito de acesso
+        $sth = $dbh->prepare(qq(select * from system.groups_tables where "group" = '$user{group}' and "table" = ? and level > 0));
+        $sth->execute($tab);
+        if($dbh->err ne "") {
+            error("Falha em verificar os direitos de acesso ao recurso requisitado ".$dbh->errstr);
+        }
+        if($sth->rows() == 0) {
+            error("Sem direito de acesso");
+        }
+    }
+
+}
+    
+    
+sub getfk {
+    my ($tab) = @_;
+        
+    my $sth = $dbh->prepare(qq(select tc.constraint_name, tc.table_name, tc.constraint_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name = ?));
+    $sth->execute($tab);
+    if($dbh->err ne "") {
+        error("Falha ao encontrar as chaves estrangeiras ao popular recurso requisitado");
+    }
+    if($sth->rows() > 0) {
+        while(my $row = $sth->fetchrow_hashref) {
+            $fk{$row->{'table_name'}}{$row->{'column_name'}}{'tab'} = $row->{'foreign_table_name'};
+            $fk{$row->{'table_name'}}{$row->{'column_name'}}{'col'} = $row->{'foreign_column_name'};
+            if(! $fk{$row->{'foreign_table_name'}}) {
+                &getfk($row->{'foreign_table_name'});
+            }
+        }
+    }
+    return true;
+}
+
+
+sub getpk {
+    my ($tab) = @_;
+    my $p = '';
+    
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+        $tab = 'system.'.$tab;
+    }
+    
+    # Lista a chave primária da tabela
+    $sth = $dbh->prepare(qq(select a.attname, format_type(a.atttypid, a.atttypmod) as data_type from pg_index i join pg_attribute a on a.attrelid = i.indrelid and a.attnum = any(i.indkey) where i.indrelid = '$tab'::regclass and i.indisprimary));
+    $sth->execute();
+    if($dbh->err ne "") {
+        error("Falha ao encontrar a chave primária do recurso requisitado");
+    }
+    if($sth->rows() > 0) {
+        while($row = $sth->fetchrow_hashref) {
+            $p .= $tab.'.'.$row->{'attname'}.', ';
+        }
+    }
+    $p =~ s/, $//;
+    return $p;
+}
+
+
+sub gerasql {
+    my ($tab, %qsql) = @_;
+    my $sql;
+    my $sql2 = '';
+    my $sql3 = '';
+    my $rtab;
+    my $schema = 'public';
+    $sql = '(select ';
+    
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'languages') {
+        $rtab = 'system.'.$tab;
+        $schema = 'system';
+    } else {
+        $rtab = $tab;
+    }
+
+    
+    my $sth = $dbh->prepare(qq(select column_name from information_schema.columns t where table_schema = '$schema' and table_name = '$tab' $tcols order by ordinal_position));
+    $sth->execute();
+    if($dbh->err ne "") {
+        error("Falha ao popular colunas do recurso requisitado");
+    }
+    if($sth->rows() == 0) {
+        error("Não existem colunas disponíveis");
+    } else {
+    
+        if($alias->{$tab} eq 'null') {
+            $alias->{$tab} = 1;
+        } else {
+            $alias->{$tab} = $alias->{$tab}+1;
+        }
+
+        while(my $row = $sth->fetchrow_hashref) {
+            if($fk{$tab}{$row->{column_name}}{'tab'}) {
+                $sql .= 'json_agg(distinct '.$fk{$tab}{$row->{column_name}}{'tab'}.($alias->{($fk{$tab}{$row->{column_name}}{'tab'})}+1).'.*)::jsonb as '.$row->{column_name}.', ';
+                if($qsql{$fk{$tab}{$row->{column_name}}{'tab'}} ne "") {
+                        $sql2 .= ' join ';
+                } else {
+                        $sql2 .= ' left join ';
+                }
+                $sql2 .= &gerasql($fk{$tab}{$row->{column_name}}{'tab'}, %qsql, $alias->{$tab});
+                $sql2 .= ' on '.$rtab.'.'.$row->{column_name}.' = '.$fk{$tab}{$row->{column_name}}{'tab'}.($alias->{($fk{$tab}{$row->{column_name}}{'tab'})}).'.'.$fk{$tab}{$row->{column_name}}{'col'};
+                $sql3 .= &getpk($tab).', ';
+            } elsif($row->{column_name} ne 'body' && $row->{column_name} ne 'password') {
+                $sql .= $rtab.'.'.$row->{column_name}.', ';
+            }
+        }
+        
+        $sql =~ s/, $//;
+        $sql .= ' from '.$rtab;
+        $sql .= $sql2;
+        if($qsql{$rtab} ne "") {
+            $sql .= $qsql{$rtab};
+        }
+        if($sql3 ne '') {
+            $sql3 =~ s/, $//;
+            $sql .= ' group by '.$sql3;
+        }
+        if($ord ne "") {
+            $sql .= ' order by '.$ord;
+        }
+        $sql .= ') '.$tab.$alias->{$tab};
+        return $sql;
+    }
+}
+
