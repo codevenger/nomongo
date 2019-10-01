@@ -43,7 +43,7 @@ $timeout = 36000; # (60 sec * 60 min * 10 horas);
 # Inicializa conexão ao banco de dados
 &connect;
 
-my $req = $ENV{'REQUEST_URI'};
+$req = $ENV{'REQUEST_URI'};
 
 # remove diretório SYS, caso exista
 $req =~ s/^\/sys\///;
