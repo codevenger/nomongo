@@ -83,14 +83,12 @@ if($sql ne "") {
                 my ($t) = ($all[$f] =~ /(\d+)/);
                 error("CPF inválido!") unless test_cpf($t);
             } elsif($all[$f] !~ /'[\d-\/\.]+'/) {
-                if($all[$f] =~ /[À-á-ú]/) {
-                    $all[$f] =~ s/='/<=>'/;
-                } elsif($all[$f] =~ /\%/) {
+                if($all[$f] =~ /\%/) {
                     $all[$f] =~ s/=/ ilike /;
                 } elsif($all[$f] =~ /=['"]+/) {
-                    $all[$f] =~ s/='/ <=> '%/g;
+                    $all[$f] =~ s/='/ ilike '%/g;
                 } else {
-                    $all[$f] =~ s/=/ <=> /g;
+                    $all[$f] =~ s/=/ ilike /g;
                 }
                 
                 $all[$f] =~ s/'\s?$/%'/;
