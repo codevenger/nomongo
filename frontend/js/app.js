@@ -73,7 +73,7 @@ app.controller("mainCtrl", function($scope, $state, $mdSidenav, menuService, $se
         };
     }
     
-    menuService.get().then(function (response) {
+    menuService.get().then(function (response){
         var data = response.data[0];
         var posload = false;
 
@@ -85,6 +85,10 @@ app.controller("mainCtrl", function($scope, $state, $mdSidenav, menuService, $se
 app.controller("homeCtrl", function($scope, $state){
     
 
+});
+
+app.controller("defaultCtrl", function($scope, $state){
+    this.columns = $state.current.render.columns;
 });
 
 app.run(function($window, $session, $http) {

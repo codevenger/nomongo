@@ -35,13 +35,49 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
         .state('groups', {
             parent: main,
             url: '/groups',
-            templateUrl: '/groups'
+            templateUrl: 'default/default.component.html',
+            controller: 'defaultCtrl',
+            controllerAs: 'tctrl',
+            render: {
+                name: 'Usuários',
+                resource: 'users',
+                columns: [
+                    {
+                        title: "Código",
+                        field: "id"
+                    },
+                    {
+                        title: "Descrição",
+                        field: "descrp"
+                    }               
+                ]
+            }
         })
         
         .state('users', {
             parent: main,
             url: '/users',
-            templateUrl: '/users'
+            templateUrl: 'default/default.component.html',
+            controller: 'defaultCtrl',
+            controllerAs: 'tctrl',
+            render: {
+                name: 'Usuários',
+                resource: 'users',
+                columns: [
+                    {
+                        title: "Código",
+                        field: "id"
+                    },
+                    {
+                        title: "Usuário",
+                        field: "username"
+                    },               
+                    {
+                        title: "Nome",
+                        field: "name"
+                    }
+                ]
+            }
         });
         
     

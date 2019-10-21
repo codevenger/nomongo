@@ -1,0 +1,18 @@
+<div ng-cloak>
+  <md-content>
+    <md-tabs md-dynamic-height md-border-bottom>
+      <md-tab label="Listagem">
+        <md-content class="md-padding">
+          <div layout="row">
+            <h3 flex="" ng-repeat="column in tctrl.columns">{{column.title}}</h3>
+          </div>        
+        </md-content>
+      </md-tab>
+      <md-tab label="Edição">
+        <md-content class="md-padding">
+          <h1 class="md-display-2">Edição</h1>
+        </md-content>
+      </md-tab>
+    </md-tabs>
+  </md-content>
+</div>

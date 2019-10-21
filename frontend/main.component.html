@@ -25,10 +25,10 @@
             <br>
                  
             <script type="text/ng-template" id="menuTree">
-                <md-accordion-button ng-if="item.goto" href="#!/{{ item.goto }}" ui-sref="{{ item.goto }}" ng-if="item.goto"><i class="fa {{ item.css }}"></i> {{ item.descrp }}</md-accordion-button>
+                <md-accordion-button ng-if="item.goto" ui-sref="{{ item.goto }}" ng-if="item.goto"><i class="fa {{ item.css }}"></i> {{ item.descrp }}</md-accordion-button>
                 
                 <md-accordion-content ng-if="!item.goto" md-class="fa {{ item.css }}" md-heading="{{ item.descrp }}" md-arrow="true">
-                    <md-accordion-button ng-repeat="subitem in item.submenu" href="#!/{{ subitem.goto }}" ui-sref="{{ subitem.goto }}" ng-if="subitem.goto"><i class="fa {{ subitem.css }}"></i> {{ subitem.descrp }}</md-accordion-button>
+                    <md-accordion-button ng-repeat="subitem in item.submenu" ui-sref="{{ subitem.goto }}" ng-if="subitem.goto"><i class="fa {{ subitem.css }}"></i> {{ subitem.descrp }}</md-accordion-button>
                     <div ng-if="item.submenu" ng-repeat="item in item.submenu" ng-include="'menuTree'"><md-accordion-group></md-accordion-group></div>
                 </md-accordion-content>
             </script>
@@ -47,11 +47,7 @@
 
     <md-content flex layout-padding>
 
-        <div layout="column" layout-align="top center">
-            <p>
-                Bem vindo!
-            </p>
-        </div>
+        <data ui-view></data>
 
     </md-content>
 
