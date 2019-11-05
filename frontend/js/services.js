@@ -56,4 +56,25 @@ app.service('menuService', ['$http', '$q', '$state', '$mdToast', '$config', '$sc
         window.sessionStorage.removeItem('sid');
         window.sessionStorage.removeItem('user');
     };
+})
+
+.service('$api', function($http, $q, $config, $state) {
+    this.load = function(resource, id) {
+        var deferred = $q.defer();
+        var parameters;
+        if(id != '') {
+            parameters = {params: {'id': id}};
+        }
+        $http.get($config.url+'/'+resource, parameters)
+            .then(function (response) {
+                if(response.data && response.data.data) {
+                    response = response.data;
+                }
+                deferred.resolve(response);
+            }, function errorCallback(response) {
+                deferred.reject(response);
+            });
+        return deferred.promise;
+    };
 });
+

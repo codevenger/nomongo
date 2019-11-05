@@ -4,8 +4,13 @@
       <md-tab label="Listagem">
         <md-content class="md-padding">
           <div layout="row">
-            <h3 flex="" ng-repeat="column in tctrl.columns">{{column.title}}</h3>
+            <h4 flex="" ng-repeat="column in tctrl.columns">{{column.title}}</h4>
           </div>        
+
+          <div layout="row" ng-repeat="row in data">
+            <p flex="" ng-repeat="column in tctrl.columns"><span ng-if="row[column.field][0].descrp">{{ row[column.field][0].descrp }}</span><span ng-if="!row[column.field][0].descrp">{{ row[column.field] }}</span></p>
+          </div>        
+
         </md-content>
       </md-tab>
       <md-tab label="Edição">

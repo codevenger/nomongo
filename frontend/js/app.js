@@ -1,7 +1,7 @@
 var app = angular.module('NoMongo', ['main', 'ui.router', 'ngSanitize', 'ngMaterial', 'ngMessages', 'ngMaterialAccordion']);
 
 app.constant('$config', {
-    url: 'http://142.93.75.2',
+    url: 'http://127.0.0.1',
     pagination: 'server'
 });
 
@@ -87,8 +87,14 @@ app.controller("homeCtrl", function($scope, $state){
 
 });
 
-app.controller("defaultCtrl", function($scope, $state){
+app.controller("defaultCtrl", function($scope, $state, $api){
     this.columns = $state.current.render.columns;
+    var resource = $state.current.render.resource;
+    
+    $api.load(resource).then(function (response) {
+        $scope.data = response.data;
+        console.log($scope.data);
+    });
 });
 
 app.run(function($window, $session, $http) {

@@ -39,8 +39,8 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
             controller: 'defaultCtrl',
             controllerAs: 'tctrl',
             render: {
-                name: 'Usuários',
-                resource: 'users',
+                name: 'Tipos Usuários',
+                resource: 'groups',
                 columns: [
                     {
                         title: "Código",
@@ -75,6 +75,10 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
                     {
                         title: "Nome",
                         field: "name"
+                    },
+                    {
+                        title: "Idioma",
+                        field: "language"
                     }
                 ]
             }
