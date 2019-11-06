@@ -3,13 +3,15 @@
     <md-tabs md-dynamic-height md-border-bottom>
       <md-tab label="Listagem">
         <md-content class="md-padding">
-          <div layout="row">
-            <h4 flex="" ng-repeat="column in tctrl.columns">{{column.title}}</h4>
-          </div>        
+          <md-list class="md-dense" flex>
+            <md-list-item layout="row">
+                <h4 flex="{{column.size}}" ng-repeat="column in tctrl.columns">{{column.title}}</h4>
+            </md-list-item>        
 
-          <div layout="row" ng-repeat="row in data">
-            <p flex="" ng-repeat="column in tctrl.columns"><span ng-if="row[column.field][0].descrp">{{ row[column.field][0].descrp }}</span><span ng-if="!row[column.field][0].descrp">{{ row[column.field] }}</span></p>
-          </div>        
+            <md-list-item layout="row" ng-repeat="row in data" ng-click="null">
+                <div class="md-list-item-text" flex="{{column.size}}" ng-repeat="column in tctrl.columns"><span ng-if="row[column.field][0].descrp">{{ row[column.field][0].descrp }}</span><span ng-if="!row[column.field][0].descrp">{{ row[column.field] }}</span></div>
+            </md-list-item>
+          </md-list>
 
         </md-content>
       </md-tab>

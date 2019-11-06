@@ -44,7 +44,8 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
                 columns: [
                     {
                         title: "Código",
-                        field: "id"
+                        field: "id",
+                        size: 20
                     },
                     {
                         title: "Descrição",
@@ -66,11 +67,13 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
                 columns: [
                     {
                         title: "Código",
-                        field: "id"
+                        field: "id",
+                        size: 10
                     },
                     {
                         title: "Usuário",
-                        field: "username"
+                        field: "username",
+                        size: 20
                     },               
                     {
                         title: "Nome",
@@ -78,7 +81,8 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
                     },
                     {
                         title: "Idioma",
-                        field: "language"
+                        field: "language",
+                        size: 20
                     }
                 ]
             }
