@@ -87,14 +87,47 @@ app.controller("homeCtrl", function($scope, $state){
 
 });
 
-app.controller("defaultCtrl", function($scope, $state, $api){
+app.controller("defaultCtrl", function($scope, $state, $api, $mdToast){
     this.columns = $state.current.render.columns;
+    this.data = $state.current.render.data;
     var resource = $state.current.render.resource;
     
-    $api.load(resource).then(function (response) {
-        $scope.data = response.data;
-        console.log($scope.data);
+    $api.get(resource).then(function (response) {
+        $scope.fetch = response.data;
     });
+    
+    $scope.load = function(editId) {
+        $api.get(resource, editId).then(function (response) {
+            var data = response.data[0];
+            if(data){
+                angular.forEach(data, function(value, key) {
+                    $scope.fetch[key] = value;
+                });
+            }
+        });
+    }
+    
+    $scope.submit = function() {
+        if($scope.editId) {
+            $api.update(resource).then(function (response) {
+                $mdToast.show(
+                    $mdToast.simple()
+                    .position('top right')
+                    .textContent(response.data.message)
+                    .theme('success-toast')
+                    .hideDelay(2000));
+            });
+        } else {
+            $api.insert(resource).then(function (response) {
+                $mdToast.show(
+                    $mdToast.simple()
+                    .position('top right')
+                    .textContent(response.data.message)
+                    .theme('success-toast')
+                    .hideDelay(2000));
+            });           
+        }
+    }
 });
 
 app.run(function($window, $session, $http) {

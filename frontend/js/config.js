@@ -45,12 +45,56 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
                     {
                         title: "Código",
                         field: "id",
-                        size: 20
+                        width: 20
                     },
                     {
                         title: "Descrição",
                         field: "descrp"
                     }               
+                ],
+                data: [
+                    {
+                        title: "Descrição",
+                        field: "descrp",
+                        width: 100,
+                        required: "true"
+                    }
+                ]
+            }
+        })
+ 
+        .state('entities', {
+            parent: main,
+            url: '/entities',
+            templateUrl: 'default/default.component.html',
+            controller: 'defaultCtrl',
+            controllerAs: 'tctrl',
+            render: {
+                name: 'Empresas',
+                resource: 'entities',
+                columns: [
+                    {
+                        title: "Código",
+                        field: "id",
+                        width: 20
+                    },
+                    {
+                        title: "Nome",
+                        field: "name"
+                    }               
+                ],
+                data: [
+                    {
+                        title: "Razão Social",
+                        field: "name",
+                        width: 100,
+                        required: "true"
+                    },
+                    {
+                        title: "Nome Fantasia",
+                        field: "alias",
+                        width: 100
+                    }
                 ]
             }
         })
@@ -68,12 +112,12 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
                     {
                         title: "Código",
                         field: "id",
-                        size: 10
+                        width: 10
                     },
                     {
                         title: "Usuário",
                         field: "username",
-                        size: 20
+                        width: 20
                     },               
                     {
                         title: "Nome",
@@ -82,7 +126,33 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
                     {
                         title: "Idioma",
                         field: "language",
-                        size: 20
+                        width: 20
+                    }
+                ],
+                data: [
+                    {
+                        title: "Usuário",
+                        field: "username",
+                        width: 30,
+                        required: "true"
+                    },
+                    {
+                        title: "Nome",
+                        field: "name",
+                        width: 65,
+                        required: "true"
+                    },
+                    {
+                        title: "E-Mail",
+                        field: "email",
+                        width: 70,
+                        required: "true"
+                    },               
+                    {
+                        title: "Idioma",
+                        field: "language",
+                        width: 25,
+                        required: "false"
                     }
                 ]
             }
