@@ -1,6 +1,6 @@
 <div ng-cloak>
   <md-content>
-    <md-tabs md-dynamic-height md-border-bottom>
+    <md-tabs md-dynamic-height md-border-bottom md-selected="selectedIndex">
       <md-tab label="Listagem">
         <md-content class="md-padding">
           <md-list class="md-dense" flex>
@@ -22,11 +22,12 @@
                 
                     <md-input-container ng-repeat="row in tctrl.data" class="md-block" flex-gt-sm="{{row.width || 45}}">
                         <label>{{row.title}}</label>
-                        <input type="text" ng-model="fetch[row.field]" ng-required="{{row.required}}">
+                        <input type="text" ng-model="val[row.field]" ng-required="{{row.required}}">
                     </md-input-container>
                 
                 </div>
                 <div align="right">
+                    <md-button type="button" class="md-raised md-warn" ng-if="editId" ng-click="delete(event, editId)">Apagar</md-button>
                     <md-button type="submit" class="md-raised md-primary">Enviar</md-button>
                 </div>
             </form>

@@ -47,7 +47,6 @@ app.controller("signinCtrl", function($sce, $scope, $state, $http, $config, $mdT
                     .textContent($sce.trustAsHtml(decoded))
                     .theme('error-toast')
                     .hideDelay(2000));
-                console.log('Erro: ', response);
             });
     }
     
@@ -87,48 +86,143 @@ app.controller("homeCtrl", function($scope, $state){
 
 });
 
-app.controller("defaultCtrl", function($scope, $state, $api, $mdToast){
+app.controller("defaultCtrl", function($sce, $scope, $state, $api, $mdToast, $mdDialog){
     this.columns = $state.current.render.columns;
     this.data = $state.current.render.data;
     var resource = $state.current.render.resource;
-    
-    $api.get(resource).then(function (response) {
+    $scope.val = {};
+    $scope.selectedIndex = 0;
+
+    $api.read(resource).then(function (response) {
         $scope.fetch = response.data;
     });
     
+    $scope.reload = function() {
+        $scope.editId = -1;
+        $api.read(resource).then(function (response) {
+            $scope.fetch = response.data;
+        });
+        $scope.selectedIndex = 0;
+    }
+    
     $scope.load = function(editId) {
-        $api.get(resource, editId).then(function (response) {
+        $scope.editId = editId;
+        $scope.val = {};
+        $api.read(resource, editId).then(function (response) {
             var data = response.data[0];
             if(data){
                 angular.forEach(data, function(value, key) {
-                    $scope.fetch[key] = value;
+                    $scope.val[key] = value;
                 });
             }
         });
     }
     
-    $scope.submit = function() {
-        if($scope.editId) {
-            $api.update(resource).then(function (response) {
+    $scope.delete = function(event, editId) {
+        var confirm = $mdDialog.confirm()
+            .title('Confirma exclusão?')
+            .textContent('Essa operação não pode ser revertida, você tem certeza que deseja excluir o registro?')
+            .targetEvent(event)
+            .ok('Confirmar')
+            .cancel('Cancelar');
+
+        $mdDialog.show(confirm).then(function() {
+            $api.delete(resource, editId).then(function (response) {
+                if(response.data) {
+                    response = response.data;
+                }
+                var decoded = angular.element('<textarea />').html(response.message).text();
                 $mdToast.show(
                     $mdToast.simple()
                     .position('top right')
-                    .textContent(response.data.message)
+                    .textContent($sce.trustAsHtml(decoded))
                     .theme('success-toast')
+                    .hideDelay(2000));
+                $scope.reload();
+            }, function (response) {
+                if(response.data) {
+                    response = response.data;
+                }
+                var decoded = angular.element('<textarea />').html(response.message).text();
+                $mdToast.show(
+                    $mdToast.simple()
+                    .position('top right')
+                    .textContent($sce.trustAsHtml(decoded))
+                    .theme('error-toast')
                     .hideDelay(2000));
             });
-        } else {
-            $api.insert(resource).then(function (response) {
+        }, function() {
+            $scope.reload();
+        });
+    }
+    
+    
+    $scope.submit = function() {
+        var editId = $scope.editId;
+        var send = {};
+        angular.forEach($scope.val, function(value, key){
+            if(typeof value !== 'undefined') {
+                if(value.selectedOption) {
+                    send[key] = value.selectedOption.id;
+                } else {
+                    send[key] = value;
+                }
+            }
+        });
+        
+        if(editId) {
+            $api.update(resource, send, editId).then(function (response) {
+                if(response.data) {
+                    response = response.data;
+                }
+                var decoded = angular.element('<textarea />').html(response.message).text();
                 $mdToast.show(
                     $mdToast.simple()
                     .position('top right')
-                    .textContent(response.data.message)
+                    .textContent($sce.trustAsHtml(decoded))
                     .theme('success-toast')
                     .hideDelay(2000));
-            });           
+                $scope.reload();
+            }, function (response) {
+                if(response.data) {
+                    response = response.data;
+                }
+                var decoded = angular.element('<textarea />').html(response.message).text();
+                $mdToast.show(
+                    $mdToast.simple()
+                    .position('top right')
+                    .textContent($sce.trustAsHtml(decoded))
+                    .theme('error-toast')
+                    .hideDelay(2000));
+                });           
+        } else {
+            $api.create(resource, send).then(function (response) {
+                if(response.data) {
+                    response = response.data;
+                }
+                var decoded = angular.element('<textarea />').html(response.message).text();
+                $mdToast.show(
+                    $mdToast.simple()
+                    .position('top right')
+                    .textContent($sce.trustAsHtml(decoded))
+                    .theme('success-toast')
+                    .hideDelay(2000));
+                $scope.reload();
+            }, function (response) {
+                if(response.data) {
+                    response = response.data;
+                }
+                var decoded = angular.element('<textarea />').html(response.message).text();
+                $mdToast.show(
+                    $mdToast.simple()
+                    .position('top right')
+                    .textContent($sce.trustAsHtml(decoded))
+                    .theme('error-toast')
+                    .hideDelay(2000));
+                });           
+            }
         }
-    }
-});
+    });
 
 app.run(function($window, $session, $http) {
     if($session.get('sid')) {

@@ -11,7 +11,138 @@ if($sid eq "") {
     error("Você precisa infomar um código de identificação");
 } elsif($sid !~ /^\d+$/) {
     error("Código de indentificação inválido");
-} else {
-    say('Altera Registro');
 }
 
+
+# Verifica se tabela existe e se usuário tem direito de acesso
+&chktbl($tab);
+
+# Lista a chave primária da tabela
+&getpk($tab);
+
+
+my $p = "|";
+my $k = ();
+my $v = ();
+my $w = ();
+my $i = 0;
+my $g = 0;
+my $r = '';
+
+
+
+my $owner = $user{'code'};
+
+# Lista a chave primária da tabela
+if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+    $rtab = 'system.'.$tab;
+} else {
+    $rtab = $tab;
+}
+$sth = $dbh->prepare(qq(select a.attname, format_type(a.atttypid, a.atttypmod) as data_type from pg_index i join pg_attribute a on a.attrelid = i.indrelid and a.attnum = any(i.indkey) where i.indrelid = '$rtab'::regclass and i.indisprimary));
+$sth->execute();
+if($dbh->err ne "") {
+    error("Falha ao encontrar a chave primária do recurso requisitado");
+}
+if($sth->rows() > 0) {
+    while($row = $sth->fetchrow_hashref) {
+        $p .= $row->{'attname'}.'|';
+        $r .= $row->{'attname'}.', ';
+    }
+}
+
+# Lista as colunas da tabela
+my $schema = 'public';
+if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+    $schema = 'system';
+}
+$sth = $dbh->prepare(qq(select column_name, data_type, coalesce(character_maximum_length, numeric_precision) as maximum_length, is_nullable from information_schema.columns t where table_schema = ? and table_name = ?));
+$sth->execute($schema, $tab);
+if($dbh->err ne "") {
+    error("Falha ao popular recurso requisitado");
+}
+if($sth->rows() == 0) {
+    error("Não existem colunas disponíveis");
+} else {
+    while($row = $sth->fetchrow_hashref) {
+        if($row->{'column_name'} eq "descrp" || $row->{'column_name'} eq "name") {
+            $r .= $row->{'column_name'}.', ';
+        }
+        if($row->{column_name} eq 'owner') {
+            if($user{group} > 2) {
+                $w[$g] = '"owner" = \''.$owner.'\'';
+                $g++;
+            }
+        } elsif($row->{'column_name'} eq 'blocked') {
+            $k[$i] = $row->{'column_name'};
+            $v[$i] = &get($row->{'column_name'});
+            $i++;
+        } elsif($row->{'column_name'} eq 'password' && &get($row->{'column_name'}) eq 'not changed') {
+            # Não faz update caso a senha não tenha mudado
+        } elsif(&get($row->{'column_name'}) ne '') {
+            if($p =~ /\|$row->{'column_name'}\|/) {
+                $w[$g] = '"'.$row->{'column_name'}.'" = \''.&get($row->{'column_name'}).'\'';
+                $g++;
+            } else {
+                $k[$i] = $row->{'column_name'};
+                $v[$i] = &get($row->{'column_name'});
+                $i++;
+            }
+        }
+    }
+}
+
+if($i == 0) {
+    error("Não foram enviados dados para o recurso");
+} elsif(scalar(@w) > 0) {
+    # Operação de update
+    $sql = 'update '.$rtab.' set ';
+    for(my $f=0; $f< scalar(@k); $f++) {
+        if($p !~ /\|$k[$f]\|/) {
+            if($k[$f] eq 'password') {
+                $sql .= '"'.$k[$f].'"=password(\''.$v[$f].'\'), ';
+            } elsif($v[$f] eq 'null') {
+                $sql .= '"'.$k[$f].'"= null, ';
+            } elsif($tab eq "users" && $k[$f] eq 'blocked') {
+                if(&get('inativo') eq 'no' || &get('inativo') eq '') {
+                    $sql .= '"'.$k[$f].'"= NULL, ';
+                } elsif($v[$f] eq '') { 
+                    $sql .= '"'.$k[$f].'"= now(), ';
+                }
+            } else {
+                $sql .= '"'.$k[$f].'"=\''.$v[$f].'\', ';
+            }
+        }
+    }
+    
+    if($sql =~ /ARRAY/) {
+        if($sql =~ /itens/) {
+            my $itens = encode_json(\@{ &get('itens')});
+            $sql =~ s/ARRAY\([^)]*\)/$itens/;
+        }
+    }
+    
+    $sql =~ s/,\s$/ where /;
+    $sql .= join(' and ', @w);
+    $sql =~ s/and\s$//;
+    $r =~ s/, $//;
+    $sql .= ' returning '.$r;
+    #error($sql);
+    $sth = $dbh->prepare($sql);
+    $sth->execute();
+    if($dbh->err ne "") {
+        error("Falha ao atualizar os registros no recurso: ".$dbh->errstr);
+    }
+    my $rv = $sth->rows;
+    my $id;
+    if($rv > 0) {
+        $row = $sth->fetchrow_hashref;
+        $id = $row->{id};
+        say("Requisição executada com sucesso");
+    } else {
+        error("Não foi atualizado nenhum registro");
+    }            
+    
+} else {
+    error("Chave do recurso não informada");
+}

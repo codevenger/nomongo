@@ -11,7 +11,67 @@ if($sid eq "") {
     error("Você precisa infomar um código de identificação");
 } elsif($sid !~ /^\d+$/) {
     error("Código de indentificação inválido");
-} else {
-    say('Exclui Registro');
 }
+
+
+
+
+if($tab =~ /\//) {
+    ($tab) = ($tab =~ /^([a-zA-Z0-9\_\-]+)\//);
+}
+
+
+&chktbl($tab);
+
+my $p = "";
+my $k = ();
+my $v = ();
+my $w = ();
+my $i = 0;
+my $g = 0;
+
+# Lista a chave primária da tabela
+if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+    $rtab = 'system.'.$tab;
+} else {
+    $rtab = $tab;
+}
+$sth = $dbh->prepare(qq(select a.attname, format_type(a.atttypid, a.atttypmod) as data_type from pg_index i join pg_attribute a on a.attrelid = i.indrelid and a.attnum = any(i.indkey) where i.indrelid = '$rtab'::regclass and i.indisprimary));
+$sth->execute();
+if($dbh->err ne "") {
+    error("Falha ao encontrar a chave primária do recurso requisitado");
+}
+if($sth->rows() == 0) {
+    error("Impossível exclusão de recurso sem valor na chave primária");
+} else {
+    $sql = "delete from $rtab where ";
+    while($row = $sth->fetchrow_hashref) {
+        if(&get($row->{'attname'}) ne "") {
+            $sql .= '"'.$row->{'attname'}.'"=\''.&get($row->{'attname'}).'\'';
+        } else {
+            (my $k, $v) = ($req =~ /[\?|&|\/]+($row->{'attname'})[=|\/]([0-9a-zA-Z]+)/);
+            if($k ne "" && $v ne "") {
+                $sql .= '"'.$k.'"=\''.$v.'\'';
+                if($k eq 'id') {
+                    $id = $v;
+                }
+            } else {
+                error("Impossível exclusão de recurso sem valor na chave primária");
+            }
+        }
+    }
+}
+
+$rv = $dbh->do($sql);
+if($dbh->err ne "") {
+    error("Falha ao excluir o registro no recurso: ".$dbh->errstr);
+}
+
+if($rv > 0) {
+    say("Requisição executada com sucesso");
+} else {
+    say("Não foi excluído nenhum registro");
+}
+
+
 

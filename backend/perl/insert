@@ -11,7 +11,141 @@ if($sid eq "") {
     error("Você precisa infomar um código de identificação");
 } elsif($sid !~ /^\d+$/) {
     error("Código de indentificação inválido");
+}
+
+
+
+
+
+
+&chktbl($tab);
+
+my $p = "";
+my $r = "";
+my @k = ();
+my @v = ();
+my @w = ();
+my $i = 0;
+my $g = 0;
+
+
+# Lista a chave primária da tabela
+if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+    $rtab = 'system.'.$tab;
 } else {
-    say('Adiciona Registro');
+    $rtab = $tab;
+}
+$sth = $dbh->prepare(qq(select a.attname, format_type(a.atttypid, a.atttypmod) as data_type from pg_index i join pg_attribute a on a.attrelid = i.indrelid and a.attnum = any(i.indkey) where i.indrelid = '$rtab'::regclass and i.indisprimary));
+$sth->execute();
+if($dbh->err ne "") {
+    error("Falha ao encontrar a chave primária do recurso requisitado");
+}
+if($sth->rows() > 0) {
+    while($row = $sth->fetchrow_hashref) {
+        $p .= $row->{'attname'}.', ';
+        $r .= $row->{'attname'}.', ';
+    }
+}
+    
+my $owner = $user{'entity'};
+
+
+# Lista as colunas da tabela
+my $schema = 'public';
+if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+    $schema = 'system';
+}
+$sth = $dbh->prepare(qq(select column_name, data_type, coalesce(character_maximum_length, numeric_precision) as maximum_length, is_nullable from information_schema.columns t where table_schema = ? and table_name = ?));
+$sth->execute($schema, $tab);
+
+if($dbh->err ne "") {
+    error("Falha ao popular recurso requisitado");
+}
+if($sth->rows() == 0) {
+    error("Não existem colunas disponíveis");
+} else {
+    while($row = $sth->fetchrow_hashref) {
+        if($row->{'column_name'} eq "descrp" || $row->{'column_name'} eq "name") {
+            $r .= $row->{'column_name'}.', ';
+        }
+        if($row->{'column_name'} eq 'owner') {
+            $k[$i] = 'owner';
+            $v[$i] = $user{entity};
+            $i++;
+        } elsif($row->{'column_name'} eq 'user_cad') {
+            $k[$i] = $row->{'column_name'};
+            $v[$i] = $user{code};
+            $i++;
+        } elsif($row->{'column_name'} eq 'element') {
+            $k[$i] = 'element';
+            $v[$i] = $element;
+            $i++;
+        } elsif($row->{'data_type'} eq 'json' || $row->{'data_type'} eq 'jsonb') {
+            $k[$i] = $row->{'column_name'};
+            if(ref(&get($row->{'column_name'})) eq 'ARRAY') {
+                $v[$i] = encode_json(\@{&get($row->{'column_name'})});
+            } else {
+                $v[$i] = 'null';
+            }
+            $i++;
+        } elsif($row->{'column_name'} eq "dt_ins") {
+            $k[$i] = 'dt_ins';
+            $v[$i] = 'now()';
+            $i++;
+        } elsif($tab eq "users" && $k[$f] eq 'blocked' && $v[$f] eq 'true') {
+            $k[$i] = 'blocked';
+            $v[$i] = 'now()';
+            $i++;
+        } elsif(&get($row->{'column_name'}) ne "" && &get($row->{'column_name'}) ne "null") {
+            $k[$i] = $row->{'column_name'};
+            $v[$i] = &get($row->{'column_name'});
+            if($row->{'column_name'} eq 'password' && $v[$i] ne "not changed") {
+                $v[$i] = 'password'.$v[$i].'password';
+            }
+            $i++;
+        }
+    }
+}
+
+if($i == 0) {
+    error("Não foram enviados dados para o recurso");
+} else {
+    # Operação de insert
+    $r = substr($r, 0, -2);
+    $p = substr($p, 0, -2);
+    $sql = 'insert into '.$rtab.' ("';
+    $sql .= join('", "', @k);
+    $sql .= '") values (\'';
+    $sql .= join("', '", @v);
+    $sql =~ s/,\s+$//;
+    $sql .= '\') returning '.$r;
+    
+    if($sql =~ /password/) {
+        $sql =~ s/'password/password('/g;
+        $sql =~ s/password'/')/g;
+    }
+    
+    #$sql =~ s/&#39;/'/gm;
+    #$sql =~ s/&apos;/'/gm;
+    
+    #error($sql);
+    $sth = $dbh->prepare($sql);
+    $sth->execute();
+    if($dbh->err ne "") {
+        error("Falha os inserir os registros no recurso $tab: ".$dbh->errstr);
+    }
+    my $rv = $sth->rows;
+    if($rv > 0) {
+        my $msg = '{';
+        $msg .= '"status" : 200, ';
+        $msg .= '"message" : "Requisi&ccedil;&atilde;o executada com sucesso", ';
+        my $row = $sth->fetchrow_hashref;
+        $msg .= '"'.$p.'" : "'.$row->{$p}.'", ';
+        $msg =~ s/, $/ }/;
+        say_json($msg);
+        
+    } else {
+        say("Não foi inserido nenhum registro");
+    }
 }
 

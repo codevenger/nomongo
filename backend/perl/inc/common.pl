@@ -197,6 +197,11 @@ sub say_json {
     my ($status) = ($row->{res} =~ /['|"]status['|"]\s?[=|:]+\s?(.*)$/i);
     print $query->header(-type => "application/json", -charset => "utf-8", -status => $status);
     print decode_utf8($msg);
+    
+    if($ENV{'REQUEST_METHOD'} ne "GET" && $dbh) {
+        $dbh->commit();
+    }
+    exit;
 }
 
 sub say {
@@ -243,5 +248,94 @@ sub deny {
     }
     print qq("message" : "Acesso negado"\n});
     exit;
+}
+
+sub chktbl {
+    my ($tab) = @_;
+    my $schema = 'public';
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+        $schema = 'system';
+    }
+    
+    my $sth = $dbh->prepare(qq(select * from information_schema.tables where table_schema = ? and table_name = ?));
+    $sth->execute($schema, $tab);
+    if($dbh->err ne "") {
+        error("Falha em localizar a recurso requisitado");
+    }
+
+    if($sth->rows() == 0) {
+        $sth = $dbh->prepare(qq(select * from pg_class where relkind = 'm' and oid::regclass::text = ?));
+        $sth->execute($tab);
+        if($dbh->err ne "") {
+            error("Falha em localizar a recurso requisitado");
+        }    
+        if($sth->rows() == 0) {
+            error("Recurso $tab não encontrado");
+        }
+    }
+
+    if($user{group} eq '') {
+        error("Falha em identificar o grupo do usuário");
+    } else {
+        # Verifica se tem direito de acesso
+        $sth = $dbh->prepare(qq(select * from system.groups_tables where "group" = '$user{group}' and "table" = ? and level > 0));
+        $sth->execute($tab);
+        if($dbh->err ne "") {
+            error("Falha em verificar os direitos de acesso ao recurso requisitado ".$dbh->errstr);
+        }
+        if($sth->rows() == 0) {
+            error("Sem direito de acesso");
+        }
+    }
+
+}
+    
+    
+sub getfk {
+    my ($tab) = @_;
+    
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+        $tab = 'system.'.$tab;
+    }
+        
+    my $sth = $dbh->prepare(qq(select tc.constraint_name, tc.table_name, tc.constraint_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name = ?));
+    $sth->execute($tab);
+    if($dbh->err ne "") {
+        error("Falha ao encontrar as chaves estrangeiras ao popular recurso requisitado");
+    }
+    if($sth->rows() > 0) {
+        while(my $row = $sth->fetchrow_hashref) {
+            $fk{$row->{'table_name'}}{$row->{'column_name'}}{'tab'} = $row->{'foreign_table_name'};
+            $fk{$row->{'table_name'}}{$row->{'column_name'}}{'col'} = $row->{'foreign_column_name'};
+            if(! $fk{$row->{'foreign_table_name'}}) {
+                &getfk($row->{'foreign_table_name'});
+            }
+        }
+    }
+    return true;
+}
+
+
+sub getpk {
+    my ($tab) = @_;
+    my $p = '';
+    
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+        $tab = 'system.'.$tab;
+    }
+    
+    # Lista a chave primária da tabela
+    $sth = $dbh->prepare(qq(select a.attname, format_type(a.atttypid, a.atttypmod) as data_type from pg_index i join pg_attribute a on a.attrelid = i.indrelid and a.attnum = any(i.indkey) where i.indrelid = '$tab'::regclass and i.indisprimary));
+    $sth->execute();
+    if($dbh->err ne "") {
+        error("Falha ao encontrar a chave primária do recurso requisitado");
+    }
+    if($sth->rows() > 0) {
+        while($row = $sth->fetchrow_hashref) {
+            $p .= $tab.'.'.$row->{'attname'}.', ';
+        }
+    }
+    $p =~ s/, $//;
+    return $p;
 }
 

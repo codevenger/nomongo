@@ -59,7 +59,7 @@ app.service('menuService', ['$http', '$q', '$state', '$mdToast', '$config', '$sc
 })
 
 .service('$api', function($http, $q, $config, $state) {
-    this.get = function(resource, id) {
+    this.read = function(resource, id) {
         var deferred = $q.defer();
         var parameters;
         if(id != '') {
@@ -76,9 +76,24 @@ app.service('menuService', ['$http', '$q', '$state', '$mdToast', '$config', '$sc
             });
         return deferred.promise;
     };
-    this.insert = function(resource) {
+    this.create = function(resource, parameters) {
         var deferred = $q.defer();
-        var parameters;
+        $http.post($config.url+'/'+resource, parameters)
+            .then(function (response) {
+                if(response.data && response.data.data) {
+                    response = response.data;
+                }
+                deferred.resolve(response);
+            }, function errorCallback(response) {
+                deferred.reject(response);
+            });
+        return deferred.promise;
+    };
+    this.update = function(resource, parameters, id){
+        var deferred = $q.defer();
+        if(!parameters.id) {
+            parameters.id = id;
+        }
         $http.put($config.url+'/'+resource, parameters)
             .then(function (response) {
                 if(response.data && response.data.data) {
@@ -90,13 +105,13 @@ app.service('menuService', ['$http', '$q', '$state', '$mdToast', '$config', '$sc
             });
         return deferred.promise;
     };
-    this.update = function(resource, id) {
+    this.delete = function(resource, id) {
         var deferred = $q.defer();
         var parameters;
         if(id != '') {
             parameters = {params: {'id': id}};
         }
-        $http.post($config.url+'/'+resource, parameters)
+        $http.delete($config.url+'/'+resource, parameters)
             .then(function (response) {
                 if(response.data && response.data.data) {
                     response = response.data;
@@ -106,6 +121,7 @@ app.service('menuService', ['$http', '$q', '$state', '$mdToast', '$config', '$sc
                 deferred.reject(response);
             });
         return deferred.promise;
-    };    
+    };
+    
 });
 
