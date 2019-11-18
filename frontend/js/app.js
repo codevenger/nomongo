@@ -95,6 +95,17 @@ app.controller("defaultCtrl", function($sce, $scope, $state, $api, $mdToast, $md
 
     $api.read(resource).then(function (response) {
         $scope.fetch = response.data;
+    }, function (response) {
+        if(response.data) {
+            response = response.data;
+        }
+        var decoded = angular.element('<textarea />').html(response.message).text();
+        $mdToast.show(
+            $mdToast.simple()
+            .position('top right')
+            .textContent($sce.trustAsHtml(decoded))
+            .theme('error-toast')
+            .hideDelay(5000));       
     });
     
     $scope.reload = function() {
