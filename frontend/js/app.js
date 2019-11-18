@@ -125,6 +125,7 @@ app.controller("defaultCtrl", function($sce, $scope, $state, $api, $mdToast, $md
                 angular.forEach(data, function(value, key) {
                     $scope.val[key] = value;
                 });
+                $scope.selectedIndex = 1;
             }
         });
     }
