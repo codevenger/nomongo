@@ -92,6 +92,7 @@ app.controller("defaultCtrl", function($sce, $scope, $state, $api, $mdToast, $md
     var resource = $state.current.render.resource;
     $scope.val = {};
     $scope.selectedIndex = 0;
+    $scope.editId = -1;
 
     $api.read(resource).then(function (response) {
         $scope.fetch = response.data;
@@ -128,6 +129,12 @@ app.controller("defaultCtrl", function($sce, $scope, $state, $api, $mdToast, $md
                 $scope.selectedIndex = 1;
             }
         });
+    }
+    
+    $scope.cancel = function() {
+        $scope.editId = -1;
+        $scope.val = {};
+        $scope.selectedIndex = 0;
     }
     
     $scope.delete = function(event, editId) {
@@ -182,7 +189,7 @@ app.controller("defaultCtrl", function($sce, $scope, $state, $api, $mdToast, $md
             }
         });
         
-        if(editId) {
+        if(editId != -1) {
             $api.update(resource, send, editId).then(function (response) {
                 if(response.data) {
                     response = response.data;

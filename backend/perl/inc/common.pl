@@ -149,10 +149,10 @@ sub connect {
     $dbh = DBI->connect("DBI:Pg:dbname=$db;host=$server;port=$port",$user,$pass) || die "Erro na conexão!!! $!\n\n";
     
     # desabilita Autocommit
-    $dbh->{AutoCommit}=0;
+    $dbh->{AutoCommit} = 0;
 
     # força UTF-8 nos resultados das consultas
-    $dbh->{pg_enable_utf8}=0;
+    $dbh->{pg_enable_utf8} = 1;
     $dbh->do("SET client_encoding TO 'UTF8';");
     
     # seta tratamento de datas para portugues
@@ -196,7 +196,7 @@ sub say_json {
     
     my ($status) = ($row->{res} =~ /['|"]status['|"]\s?[=|:]+\s?(.*)$/i);
     print $query->header(-type => "application/json", -charset => "utf-8", -status => $status);
-    print decode_utf8($msg);
+    print $msg;
     
     if($ENV{'REQUEST_METHOD'} ne "GET" && $dbh) {
         $dbh->commit();
@@ -253,7 +253,7 @@ sub deny {
 sub chktbl {
     my ($tab) = @_;
     my $schema = 'public';
-    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'languages') {
         $schema = 'system';
     }
     
@@ -294,10 +294,6 @@ sub chktbl {
 sub getfk {
     my ($tab) = @_;
     
-    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
-        $tab = 'system.'.$tab;
-    }
-        
     my $sth = $dbh->prepare(qq(select tc.constraint_name, tc.table_name, tc.constraint_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name = ?));
     $sth->execute($tab);
     if($dbh->err ne "") {
@@ -320,7 +316,7 @@ sub getpk {
     my ($tab) = @_;
     my $p = '';
     
-    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'languages') {
         $tab = 'system.'.$tab;
     }
     

@@ -15,7 +15,7 @@
 
         </md-content>
       </md-tab>
-      <md-tab label="Edição">
+      <md-tab label="{{title}}" ng-if="editId == -1 ? title='Incluir': title='Editar'">
         <md-content class="md-padding">
             <form name="default" style="margin-top: 20px" ng-submit="submit()">
                 <div layout="column" layout-gt-sm="row" layout-wrap layout-align-gt-sm="space-between start">
@@ -27,7 +27,8 @@
                 
                 </div>
                 <div align="right">
-                    <md-button type="button" class="md-raised md-warn" ng-if="editId" ng-click="delete(event, editId)">Apagar</md-button>
+                    <md-button type="button" class="md-raised md-warn" ng-if="editId != -1" ng-click="delete(event, editId)">Apagar</md-button>
+                    <md-button type="button" class="md-raised md-secondary" ng-if="editId != -1" ng-click="cancel(event)">Cancelar</md-button>
                     <md-button type="submit" class="md-raised md-primary">Enviar</md-button>
                 </div>
             </form>

@@ -31,6 +31,11 @@ md-input-container {
   text-align: center;
 }
 
+.md-success {
+  color: white !important;
+  background-color: green !important;
+}
+
 md-toast.md-success-toast-theme .md-toast-content {
   margin-top: 45px;
   background-color: green;
