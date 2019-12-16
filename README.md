@@ -20,3 +20,22 @@ PUT = Utilizado para alteração de dados. É necessário enviar a chave primár
 DELETE = Utilizado para exclusão de de dados e deve ser informado o valor da chave na URI.
 
 
+### Instalação versão em container:
+Proceda com os seguintes comandos:
+
+    $ git clone https://github.com/codevenger/nomongo
+    $ cd nomongo
+    $ docker build -t docker-nomongo .
+    $ docker run -it -v $(pwd)/frontend:/var/www/nomongo/frontend -v $(pwd)/backend:/var/www/nomongo/backend --name nomongo -p 80:80 -d docker-nomongo
+    $ docker exec -it nomongo sed -i -e "s/# pt_BR.UTF-8/pt_BR.UTF-8/" /etc/locale.gen
+    $ docker exec -it nomongo dpkg-reconfigure --frontend=noninteractive locales
+    $ docker exec -it nomongo update-locale LANG=pt_BR.UTF-8
+    $ docker exec -it nomongo sed -i 's|C.UTF-8|pt_BR.UTF-8|gm' /etc/postgresql/10/main/postgresql.conf
+    $ docker exec -it nomongo service postgresql start
+    $ docker exec -it nomongo su -c "psql < /var/www/nomongo/backend/database.sql" postgres
+    $ docker cp nomongo.d nomongo:/etc/
+    $ docker exec -it nomongo service apache2 start
+ 
+    
+Por fim, abra com seu navegador preferido o endereço [http://localhost/](http://localhost)
+
