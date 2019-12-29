@@ -176,8 +176,8 @@ sub gerasql {
     my $rtab;
     my $schema = 'public';
     $sql = '(select ';
-    
-    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'languages') {
+        
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'menu_groups' || $tab eq 'menu_control' || $tab eq 'languages') {
         $rtab = 'system.'.$tab;
         $schema = 'system';
     } else {
@@ -185,15 +185,14 @@ sub gerasql {
     }
 
     
-    my $sth = $dbh->prepare(qq(select column_name from information_schema.columns t where table_schema = '$schema' and table_name = '$tab' $tcols order by ordinal_position));
-    $sth->execute();
+    my $sth = $dbh->prepare(qq(select column_name from "information_schema"."columns" t where t.table_schema = ? and t.table_name = ? order by t.ordinal_position));
+    $sth->execute($schema, $tab);
     if($dbh->err ne "") {
         error("Falha ao popular colunas do recurso requisitado");
     }
     if($sth->rows() == 0) {
-        error("Não existem colunas disponíveis");
+        error("Não existem colunas disponíveis no recurso $tab");
     } else {
-    
         if($alias->{$tab} eq 'null') {
             $alias->{$tab} = 1;
         } else {

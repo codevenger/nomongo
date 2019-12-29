@@ -31,6 +31,67 @@ app.config(function($stateProvider, $urlRouterProvider, $locationProvider, $conf
             templateUrl : 'signin/signin.component.html',
             controller : 'signoutCtrl'
         })
+
+        .state('menu_control', {
+            parent: main,
+            url: '/menu_control',
+            templateUrl: 'default/default.component.html',
+            controller: 'defaultCtrl',
+            controllerAs: 'tctrl',
+            render: {
+                name: 'Cadastro de menu',
+                resource: 'menu_control',
+                columns: [
+                    {
+                        title: "Código",
+                        field: "id",
+                        width: 20
+                    },
+                    {
+                        title: "Descrição",
+                        field: "descrp"
+                    }
+                ],
+                data: [
+                    {
+                        title: "Descrição",
+                        field: "descrp",
+                        width: 100,
+                        required: "true"
+                    },
+                    {
+                        title: "Descrição em inglês",
+                        field: "descri",
+                        width: 100,
+                        required: "true"
+                    },
+                    {
+                        title: "Ação",
+                        field: "goto",
+                        width: 100,
+                        required: "false"
+                    },
+                    {
+                        title: "Ícone em Cascade Style Sheet",
+                        field: "css",
+                        width: 100,
+                        required: "false"
+                    },
+                    {
+                        title: "Ícone App",
+                        field: "icon",
+                        width: 100,
+                        required: "false"
+                    },
+                    {
+                        title: "Pai",
+                        field: "parent",
+                        width: 100,
+                        required: "false"
+                    }               
+                ]
+            }
+        })
         
         .state('groups', {
             parent: main,

@@ -17,9 +17,6 @@ if($sid eq "") {
 # Verifica se tabela existe e se usuário tem direito de acesso
 &chktbl($tab);
 
-# Lista a chave primária da tabela
-&getpk($tab);
-
 
 my $p = "|";
 my $k = ();
@@ -34,7 +31,7 @@ my $r = '';
 my $owner = $user{'code'};
 
 # Lista a chave primária da tabela
-if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+if($tab eq 'users' || $tab eq 'groups' || $tab eq 'menu_groups' || $tab eq 'menu_control' || $tab eq 'languages') {
     $rtab = 'system.'.$tab;
 } else {
     $rtab = $tab;
@@ -53,7 +50,7 @@ if($sth->rows() > 0) {
 
 # Lista as colunas da tabela
 my $schema = 'public';
-if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups') {
+if($tab eq 'users' || $tab eq 'groups' || $tab eq 'menu_groups' || $tab eq 'menu_control' || $tab eq 'languages') {
     $schema = 'system';
 }
 $sth = $dbh->prepare(qq(select column_name, data_type, coalesce(character_maximum_length, numeric_precision) as maximum_length, is_nullable from information_schema.columns t where table_schema = ? and table_name = ?));

@@ -25,13 +25,15 @@ Proceda com os seguintes comandos:
 
     $ git clone https://github.com/codevenger/nomongo
     $ cd nomongo
-    $ docker build -t docker-nomongo .
-    $ docker run -it -v $(pwd)/frontend:/var/www/nomongo/frontend -v $(pwd)/backend:/var/www/nomongo/backend --name nomongo -p 80:80 -d docker-nomongo
+    $ docker build -t nomongo .
+    $ docker run -it -v $(pwd)/frontend:/var/www/nomongo/frontend -v $(pwd)/backend:/var/www/nomongo/backend --name nomongo -p 80:80 -d nomongo
     $ docker exec -it nomongo sed -i -e "s/# pt_BR.UTF-8/pt_BR.UTF-8/" /etc/locale.gen
     $ docker exec -it nomongo dpkg-reconfigure --frontend=noninteractive locales
     $ docker exec -it nomongo update-locale LANG=pt_BR.UTF-8
     $ docker exec -it nomongo sed -i 's|C.UTF-8|pt_BR.UTF-8|gm' /etc/postgresql/10/main/postgresql.conf
-    $ docker exec -it nomongo service postgresql start
+    $ docker exec -it nomongo pg_dropcluster --stop 10 main
+    $ docker exec -it nomongo pg_createcluster --locale pt_BR.UTF-8 --start 10 main
+    $ docker exec -it nomongo service postgresql restart
     $ docker exec -it nomongo su -c "psql < /var/www/nomongo/backend/database.sql" postgres
     $ docker cp nomongo.d nomongo:/etc/
     $ docker exec -it nomongo service apache2 start

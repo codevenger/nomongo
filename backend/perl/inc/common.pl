@@ -253,7 +253,7 @@ sub deny {
 sub chktbl {
     my ($tab) = @_;
     my $schema = 'public';
-    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'languages') {
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'menu_groups'|| $tab eq 'menu_control' || $tab eq 'languages') {
         $schema = 'system';
     }
     
@@ -284,7 +284,9 @@ sub chktbl {
             error("Falha em verificar os direitos de acesso ao recurso requisitado ".$dbh->errstr);
         }
         if($sth->rows() == 0) {
-            error("Sem direito de acesso");
+            if($user{group} ne '1') {
+                error("Sem direito de acesso");
+            }
         }
     }
 
@@ -316,7 +318,7 @@ sub getpk {
     my ($tab) = @_;
     my $p = '';
     
-    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'languages') {
+    if($tab eq 'users' || $tab eq 'groups' || $tab eq 'users_groups' || $tab eq 'menu_groups' || $tab eq 'languages') {
         $tab = 'system.'.$tab;
     }
     
